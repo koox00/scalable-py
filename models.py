@@ -28,6 +28,7 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
+    sessionWishlist = ndb.StringProperty(repeated=True)
 
 
 class ProfileMiniForm(messages.Message):
@@ -42,6 +43,7 @@ class ProfileForm(messages.Message):
     mainEmail = messages.StringField(2)
     teeShirtSize = messages.EnumField('TeeShirtSize', 3)
     conferenceKeysToAttend = messages.StringField(4, repeated=True)
+    sessionWishlist = messages.StringField(5, repeated=True)
 
 
 class StringMessage(messages.Message):
@@ -57,7 +59,7 @@ class BooleanMessage(messages.Message):
 class Conference(ndb.Model):
     """Conference -- Conference object"""
     name = ndb.StringProperty(required=True)
-    description = ndb.StringProperty()
+    description = ndb.StringProperty()  # indexed=False
     organizerUserId = ndb.StringProperty()
     topics = ndb.StringProperty(repeated=True)
     city = ndb.StringProperty()
@@ -66,6 +68,16 @@ class Conference(ndb.Model):
     endDate = ndb.DateProperty()
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
+
+    @property
+    def sessions(self):
+        """Returns a query object with current conf as an ancestor.
+
+        This is too be used when you want both Conference and Sessions,
+        when used to get only sessions costs one RPC more (e.g: getConferenceSessions).
+        However it returns a correct 404 when Conf doesn't exist
+        """
+        return Session.query(ancestor=self.key).order(Session.date, Session.startTime)
 
 
 class ConferenceForm(messages.Message):
@@ -125,14 +137,18 @@ class Session(ndb.Model):
     name = ndb.StringProperty(required=True)
     highlights = ndb.StringProperty(repeated=True)
     speaker = ndb.StringProperty()
-    duration = ndb.StringProperty()
+    duration = ndb.StringProperty()  # indexed=False
     typeOfSession = ndb.StringProperty()
     date = ndb.DateProperty()
     startTime = ndb.TimeProperty()
 
 
 class SessionForm(messages.Message):
-    """SessionForm -- Session outbound form message"""
+    """SessionForm
+
+    Session outbound form message
+    Expects to have Conference's key as the parent key.
+    """
     name = messages.StringField(1)
     highlights = messages.StringField(2, repeated=True)
     speaker = messages.StringField(3)
@@ -140,8 +156,26 @@ class SessionForm(messages.Message):
     typeOfSession = messages.StringField(5)
     date = messages.StringField(6)  # DateTimeField()
     startTime = messages.StringField(7)  # DateTimeField()
+    websafeKey = messages.StringField(8)
 
 
 class SessionForms(messages.Message):
-    """SessionForms -- multiple Conference Sessions  outbound form message"""
+    """SessionForms
+
+    Multiple Conference Sessions  outbound form message
+    """
     items = messages.MessageField(SessionForm, 1, repeated=True)
+
+
+class Speaker(ndb.Model):
+    """Speaker -- Speaker entity object"""
+    fullName = ndb.StringProperty()
+    email = ndb.StringProperty()
+    featuredSessions = ndb.StringProperty(repeated=True)
+
+
+class SpeakerForm(messages.Message):
+    """SpeakerForm - Speaker outbound form message"""
+    fullName = messages.StringField(1)
+    email = messages.StringField(2)
+    featuredSessions = messages.StringField(3, repeated=True)
