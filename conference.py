@@ -339,7 +339,6 @@ class ConferenceApi(remote.Service):
 
 # - - - Conference Sessions - - - - - - - - - - - - - - - - - - -
 
-
     def _createSessionObject(self, request):
         user = endpoints.get_current_user()
         if not user:
@@ -372,7 +371,7 @@ class ConferenceApi(remote.Service):
         if data['date']:
             data['date'] = datetime.strptime(data['date'][:10], "%Y-%m-%d").date()
         if data['startTime']:
-            data['startTime'] = datetime.strptime(data['startTime'][:8], "%H:%M:%S").time()
+            data['startTime'] = datetime.strptime(data['startTime'][:5], "%H:%M").time()
 
         del data['websafeConferenceKey']
 
@@ -384,7 +383,7 @@ class ConferenceApi(remote.Service):
         print request
         # creation of Session & return (modified) SessionForm
         Session(**data).put()
-        return request
+        return self._copySessionToForm(request)
 
     # Helper to Copy relevant fields from Session to SessionForm."""
     def _copySessionToForm(self, sess):
@@ -446,7 +445,7 @@ class ConferenceApi(remote.Service):
                        for sess in sessions])
 
     # Create Session Endpoint
-    @endpoints.method(SessionForm, SessionForm,
+    @endpoints.method(SESS_POST_REQUEST, SessionForm,
                       path='conference/sessions/{websafeConferenceKey}',
                       http_method='POST', name='createSession')
     def createSession(self, request):
