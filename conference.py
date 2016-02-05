@@ -137,13 +137,11 @@ class ConferenceApi(remote.Service):
         cf.check_initialized()
         return cf
 
-    # this maybe qualifies as transactional.
-    # what needs to be done to work, is to put allocate ids outside of the transaction,
-    # and ndb.put_multi([prof, conf]) in a transaction
     def _createConferenceObject(self, request):
         """Create or update Conference object.
 
-        If profile doesn't exist create it also
+        User logged in is required
+        If user's profile doesn't exist for some reason create it.
         return:
             ConferenceForm/request.
         """
@@ -203,6 +201,10 @@ class ConferenceApi(remote.Service):
 
     @ndb.transactional()
     def _updateConferenceObject(self, request):
+        """Update conference Object
+
+        Only owner must be allowed
+        """
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
@@ -364,7 +366,7 @@ class ConferenceApi(remote.Service):
 
     @ndb.transactional(xg=True)
     def _makeTransaction(self, session, speaker):
-        """Save the session and featured speaker in a transaction"""
+        """Save the session and update featured speaker in a transaction"""
 
         Session(**session).put()
         speaker.featuredSessions.append(session['key'].urlsafe())
@@ -373,6 +375,10 @@ class ConferenceApi(remote.Service):
         return (session, speaker)
 
     def _createSessionObject(self, request):
+        """ Create Session object, but don't save yet
+
+        The actual store happens in _makeTransactional
+        """
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
@@ -584,13 +590,14 @@ class ConferenceApi(remote.Service):
         """Create Featured Speaker & assign to memcache; used by
         getFeaturedSpeakers().
         """
+        # Tried to disable cache and get the datastore results but fail, it's always one session behind
         speaker = Speaker.query(Speaker.fullName == speakers_name).get(use_cache=False, use_memcache=False)
 
         if speaker:
             s_keys = [ndb.Key(urlsafe=wssk) for wssk in speaker.featuredSessions]
             sessions = ndb.get_multi(s_keys)
 
-            # print len(s_keys)
+            # print len(s_keys) # <- these after having 2 sessions for speaker resolve to 1
             # print len(sessions)
 
             sessions_names = ', '.join([sess.name for sess in sessions])
