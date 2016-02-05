@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-import httplib
-import endpoints
-from protorpc import messages
-from google.appengine.ext import ndb
-
 """models.py
 
 Udacity conference server-side Python App Engine data & ProtoRPC models
@@ -14,7 +9,10 @@ created/forked from conferences.py by wesc on 2014 may 24
 
 """
 
-__author__ = 'wesc+api@google.com (Wesley Chun)'
+import httplib
+import endpoints
+from protorpc import messages
+from google.appengine.ext import ndb
 
 
 class ConflictException(endpoints.ServiceException):
@@ -184,3 +182,6 @@ class SpeakerForm(messages.Message):
     fullName = messages.StringField(1)
     email = messages.StringField(2)
     featuredSessions = messages.StringField(3, repeated=True)
+
+
+__authors__ = 'wesc+api@google.com (Wesley Chun), cooxlee@gmail.com (Koox00)'

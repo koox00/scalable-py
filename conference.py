@@ -7,13 +7,8 @@ conference.py -- Udacity conference server-side Python App Engine API;
 $Id: conference.py,v 1.25 2014/05/24 23:42:19 wesc Exp wesc $
 
 created by wesc on 2014 apr 21
-
 """
 
-__author__ = 'wesc+api@google.com (Wesley Chun)'
-
-
-import json
 from datetime import datetime
 
 import endpoints
@@ -105,7 +100,10 @@ SESS_GET_REQUEST = endpoints.ResourceContainer(
 SESS_POST_REQUEST = endpoints.ResourceContainer(
     SessionForm,
     websafeConferenceKey=messages.StringField(1),
+)
 
+SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
+    speaker=messages.StringField(1),
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -483,6 +481,27 @@ class ConferenceApi(remote.Service):
                        for sess in sessions]
         )
 
+    @endpoints.method(SPEAKER_GET_REQUEST, SessionForms,
+                      path='speaker/{speaker}/sessions',
+                      http_method='GET', name='getSessionsBySpeaker')
+    def getSessionsBySpeaker(self, request):
+        """Given a speaker, return all sessions given by this particular speaker,
+        across all conferences (by speaker's fullname).
+        """
+        speakers_name = request.speaker
+        speaker = Speaker.query(Speaker.fullName == speakers_name).get()
+
+        if not speaker:
+            raise endpoints.NotFoundException(
+                'No speaker found by the name: %s' % speakers_name)
+
+        s_keys = [ndb.Key(urlsafe=wssk) for wssk in speaker.featuredSessions]
+        sessions = ndb.get_multi(s_keys)
+        return SessionForms(
+                items=[self._copySessionToForm(sess)
+                       for sess in sessions]
+        )
+
     # Create Session Endpoint
     @endpoints.method(SESS_POST_REQUEST, SessionForm,
                       path='conference/sessions/{websafeConferenceKey}',
@@ -570,8 +589,9 @@ class ConferenceApi(remote.Service):
         if speaker:
             s_keys = [ndb.Key(urlsafe=wssk) for wssk in speaker.featuredSessions]
             sessions = ndb.get_multi(s_keys)
-            print len(s_keys)
-            print len(sessions)
+
+            # print len(s_keys)
+            # print len(sessions)
 
             sessions_names = ', '.join([sess.name for sess in sessions])
             # create a message for display
@@ -593,6 +613,7 @@ class ConferenceApi(remote.Service):
     def getFeaturedSpeaker(self, request):
         """Get most recent speaker featured in more than one sessions"""
         return StringMessage(data=memcache.get(MEMCACHE_FSPEAKER_KEY) or "")
+
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
@@ -882,3 +903,5 @@ class ConferenceApi(remote.Service):
 
 
 api = endpoints.api_server([ConferenceApi])  # register API
+
+__authors__ = 'wesc+api@google.com (Wesley Chun), cooxlee@gmail.com (Koox00)'

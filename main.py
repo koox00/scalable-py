@@ -10,8 +10,6 @@ created by wesc on 2014 may 24
 
 """
 
-__author__ = 'wesc+api@google.com (Wesley Chun)'
-
 import webapp2
 from google.appengine.api import app_identity
 from google.appengine.api import mail
@@ -51,3 +49,6 @@ app = webapp2.WSGIApplication([
     ('/tasks/send_confirmation_email', SendConfirmationEmailHandler),
     ('/tasks/featured_speaker', SetFeaturedSpeakerHandler),
 ], debug=True)
+
+
+__authors__ = 'wesc+api@google.com (Wesley Chun), cooxlee@gmail.com (Koox00)'
