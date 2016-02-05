@@ -23,6 +23,13 @@ class SetAnnouncementHandler(webapp2.RequestHandler):
         self.response.set_status(204)
 
 
+class SetNotificationHandler(webapp2.RequestHandler):
+    def get(self):
+        """Set Announcement in Memcache."""
+        ConferenceApi._notifyFollowers()
+        self.response.set_status(204)
+
+
 class SendConfirmationEmailHandler(webapp2.RequestHandler):
     def post(self):
         """Send email confirming Conference creation."""
@@ -37,6 +44,20 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
         )
 
 
+class SendFollowerEmail(webapp2.RequestHandler):
+    def post(self):
+        """Send email when ."""
+        mail.send_mail(
+            'noreply@%s.appspotmail.com' % (
+                app_identity.get_application_id()),     # from
+            self.request.get('email'),                  # to
+            'Greate News!',                             # subj
+            'A spot has opened in the following '       # body
+            'conference:\r\n\r\n%s' % self.request.get(
+                'conference')
+        )
+
+
 class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
     def post(self):
         """Set Featured Speaker in Memcache."""
@@ -46,8 +67,10 @@ class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
+    ('/crons/notify_users', SetNotificationHandler),
     ('/tasks/send_confirmation_email', SendConfirmationEmailHandler),
     ('/tasks/featured_speaker', SetFeaturedSpeakerHandler),
+    ('/tasks/send_email_2_follower', SendFollowerEmail)
 ], debug=True)
 
 

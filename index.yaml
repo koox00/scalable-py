@@ -57,6 +57,18 @@ indexes:
 
 - kind: Conference
   properties:
+  - name: hasFollowers
+  - name: seatsAvailable
+
+- kind: Conference
+  properties:
+  - name: hasFollowers
+  - name: seatsAvailable
+  - name: followedBy
+  - name: name
+
+- kind: Conference
+  properties:
   - name: maxAttendees
   - name: month
   - name: name
@@ -88,6 +100,11 @@ indexes:
   properties:
   - name: month
   - name: topics
+  - name: name
+
+- kind: Conference
+  properties:
+  - name: seatsAvailable
   - name: name
 
 - kind: Conference

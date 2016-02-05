@@ -36,15 +36,15 @@ The implementation is pretty straightforward.
 **Start time**: This is an `ndb.TimeProperty()` it should always have an input in following the 24h notation. e.g: 17:00.
 
 **Speaker**: As these could be made in a lot of ways I chose what I thought  simplest, just store the speakers fullname (required field). However there is a Speaker entity also.
-When a user creates a session and assigns a speaker the application get's that Speaker entity from the datastore quering by `Speaker.fullName`, if there isn't any it creates that entity before assigning the speaker to the session. The assignment happens in a transactional way.
-In the speaker entity there is a list of the sessions the speaker is featured.
+When a user creates a session and assigns a speaker the application gets that Speaker entity from the datastore quering by `Speaker.fullName`, if there isn't any records that entity gets created before assigning the speaker to the session. The assignment happens in a transactional way immediately afterwards.
+In the speaker entity there is a list of the sessions the speaker is featured (assigned).
 
 ### Additional queries
 
-- User can follow conferences that he is interested in and are full.
-When a spot empties he gets notified by an email.
+- Users can follow conferences that they are interested in and are full.
+When a spot empties the get notified by an email.
 
-- User can query for sessions in conferences he is registered and are overlapping with others so he can make his schedule accordingly.
+- Users can query for sessions in conferences they are registered and are overlapping with others so they can make their schedule accordingly.
 
 
 ## Problematic Query

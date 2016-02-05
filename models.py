@@ -66,6 +66,8 @@ class Conference(ndb.Model):
     endDate = ndb.DateProperty()
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
+    followedBy = ndb.StringProperty(repeated=True)
+    hasFollowers = ndb.ComputedProperty(lambda self: len(self.followedBy) != 0)  # solves an inequlity problem in notifyFolllowers
 
     @property
     def sessions(self):

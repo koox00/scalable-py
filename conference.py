@@ -337,6 +337,21 @@ class ConferenceApi(remote.Service):
             formatted_filters.append(filtr)
         return (inequality_field, formatted_filters)
 
+    @staticmethod
+    def _notifyFollowers():
+        confs = Conference.query(ndb.AND(
+            Conference.seatsAvailable > 0,
+            Conference.hasFollowers == True
+            )
+        ).fetch()
+
+        for conf in confs:
+            for follower in conf.followedBy:
+                taskqueue.add(params={'email': follower, 'conference': conf.name},
+                              url='/tasks/send_email_2_follower')
+            conf.followedBy = []
+            conf.put()
+
     @endpoints.method(ConferenceQueryForms, ConferenceForms,
                       path='queryConferences',
                       http_method='POST',
@@ -360,6 +375,36 @@ class ConferenceApi(remote.Service):
                 items=[self._copyConferenceToForm(conf, names[conf.organizerUserId])
                        for conf in conferences]
         )
+
+    @endpoints.method(CONF_GET_REQUEST, BooleanMessage,
+                      path='conference/follow/{websafeConferenceKey}',
+                      http_method='GET', name='followConference')
+    def followConference(self, request):
+        """If this conference is full, follow to get notified when it becomes avilable again"""
+        retVal = True
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        email = user.email()
+
+        wsck = request.websafeConferenceKey
+        c_key = ndb.Key(urlsafe=wsck)
+        if c_key.kind() != "Conference":
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % wsck)
+        conf = c_key.get()
+
+        if email in conf.followedBy:
+            raise ConflictException(
+                "You already follow this conference")
+
+        if conf.seatsAvailable > 0:
+            retVal = False
+        else:
+            conf.followedBy.append(email)
+            conf.put()
+
+        return BooleanMessage(data=retVal)
 
 
 # - - - Conference Sessions - - - - - - - - - - - - - - - - - - -
@@ -454,7 +499,7 @@ class ConferenceApi(remote.Service):
         # get Conference object from request; bail if not found
         wsck = request.websafeConferenceKey
         conf = ndb.Key(urlsafe=wsck)
-        if not conf.kind() == "Conference":
+        if conf.kind() != "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % wsck)
 
@@ -535,24 +580,20 @@ class ConferenceApi(remote.Service):
         """Query sessions with two inequallite filters"""
 
         q = Session.query()
-
         # get time limits
         time_up = datetime.strptime('19:00', '%H:%M').time()
         time_down = datetime.strptime('00:00', '%H:%M').time()
-
         # ndb filter one inequality ( typeOfSession)
         q = q.filter(Session.typeOfSession != "workshop")
         # This has to be first
         q = q.order(Session.typeOfSession)
         q = q.order(Session.date, Session.startTime, Session.name)
 
-        retSess = SessionForms(
+        return SessionForms(
                     items=[self._copySessionToForm(sess)
                            for sess in q
                            if sess.startTime < time_up]  # filter out sessions by time limits
         )
-
-        return retSess
 
 
 # - - - Speaker  - - - - - - - - - - - - - - - - - - -
