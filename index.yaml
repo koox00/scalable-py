@@ -96,6 +96,24 @@ indexes:
   - name: name
 
 - kind: Session
+  properties:
+  - name: typeOfSession
+  - name: date
+  - name: startTime
+
+- kind: Session
+  properties:
+  - name: typeOfSession
+  - name: date
+  - name: startTime
+  - name: name
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: date
+
+- kind: Session
   ancestor: yes
   properties:
   - name: date
@@ -104,7 +122,40 @@ indexes:
 - kind: Session
   ancestor: yes
   properties:
+  - name: date
   - name: startTime
+  - name: name
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: date
+  - name: startTime
+    direction: desc
+  - name: name
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: name
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: name
+  - name: date
+  - name: startTime
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: startTime
+
+- kind: Session
+  ancestor: yes
+  properties:
+  - name: startTime
+  - name: name
 
 - kind: Session
   ancestor: yes

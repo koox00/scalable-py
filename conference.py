@@ -132,12 +132,23 @@ class ConferenceApi(remote.Service):
         cf.check_initialized()
         return cf
 
+    # this maybe qualifies as transactional.
+    # what needs to be done to work, is to put allocate ids outside of the transaction,
+    # and ndb.put_multi([prof, conf]) in a transaction
     def _createConferenceObject(self, request):
-        """Create or update Conference object, returning ConferenceForm/request."""
+        """Create or update Conference object.
+
+        If profile doesn't exist create it also
+        return:
+            ConferenceForm/request.
+        """
         # preload necessary data items
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
+
+        # get/create profile
+        prof = self._getProfileFromUser()
         user_id = getUserId(user)
 
         if not request.name:
@@ -168,7 +179,9 @@ class ConferenceApi(remote.Service):
             data["seatsAvailable"] = data["maxAttendees"]
         # generate Profile Key based on user ID and Conference
         # ID based on Profile key get Conference key from ID
-        p_key = ndb.Key(Profile, user_id)
+
+        p_key = prof.key
+
         c_id = Conference.allocate_ids(size=1, parent=p_key)[0]
         c_key = ndb.Key(Conference, c_id, parent=p_key)
         data['key'] = c_key
@@ -418,12 +431,12 @@ class ConferenceApi(remote.Service):
         # get Conference object from request; bail if not found
         wsck = request.websafeConferenceKey
         conf = ndb.Key(urlsafe=wsck)
-        if not conf:
+        if not conf.kind() == "Conference":
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % wsck)
 
         sessions = Session.query(ancestor=conf)
-        sessions = sessions.order(Session.date, Session.startTime)
+        sessions = sessions.order(Session.date, Session.startTime, Session.name)
 
         # return individual SessionForm object per Session
         return SessionForms(
@@ -444,11 +457,12 @@ class ConferenceApi(remote.Service):
 
         sessions = Session.query(ancestor=conf)
         sessions = sessions.filter(Session.typeOfSession == request.typeOfSession)
-        sessions = sessions.order(Session.date, Session.startTime)
+        sessions = sessions.order(Session.date, Session.startTime, Session.name)
 
         return SessionForms(
                 items=[self._copySessionToForm(sess)
-                       for sess in sessions])
+                       for sess in sessions]
+        )
 
     # Create Session Endpoint
     @endpoints.method(SESS_POST_REQUEST, SessionForm,
@@ -457,6 +471,26 @@ class ConferenceApi(remote.Service):
     def createSession(self, request):
         """Create new session in conference (by websafeConferenceKey)."""
         return self._createSessionObject(request)
+
+    # Given a conference, return all sessions filtered by POST data.
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+                      path='sessions/query',
+                      http_method='GET', name='getSessionsProblematicQuery')
+    def getSessionsProblematicQuery(self, request):
+        """Query sessions with two inequallite filters"""
+
+        q = Session.query()
+
+        d = datetime.strptime('19:00', '%H:%M').time()
+        q = q.filter(Session.typeOfSession != "workshop")
+        q = q.order(Session.typeOfSession)
+        q = q.order(Session.date, Session.startTime, Session.name)
+
+        retSess = SessionForms(
+                    items=[self._copySessionToForm(sess)
+                           for sess in q if sess.startTime < d])
+
+        return retSess
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 
@@ -575,7 +609,13 @@ class ConferenceApi(remote.Service):
         # check if session exists given sessionKey
         # get session; check that it exists
         s_key = request.sessionKey
-        session = ndb.Key(urlsafe=s_key).get()
+        key = ndb.Key(urlsafe=s_key)
+
+        if key.kind() != "Session":
+            raise endpoints.NotFoundException(
+                'No session found with key: %s' % s_key)
+
+        session = key.get()
         if not session:
             raise endpoints.NotFoundException(
                 'No session found with key: %s' % s_key)

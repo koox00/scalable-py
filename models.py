@@ -71,13 +71,18 @@ class Conference(ndb.Model):
 
     @property
     def sessions(self):
-        """Returns a query object with current conf as an ancestor.
+        """Returns a Session query object with current conf as an ancestor.
 
         This is too be used when you want both Conference and Sessions,
         when used to get only sessions costs one RPC more (e.g: getConferenceSessions).
         However it returns a correct 404 when Conf doesn't exist
         """
         return Session.query(ancestor=self.key).order(Session.date, Session.startTime)
+
+    @property
+    def profile(self):
+        """Returns a query object with current conf as an ancestor."""
+        return Profile.query(ancestor=self.key.parent())
 
 
 class ConferenceForm(messages.Message):
