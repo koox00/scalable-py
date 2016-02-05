@@ -52,8 +52,8 @@ When a spot empties the get notified by an email (cron job, task queue).
 >Let’s say that you don't like workshops and you don't like sessions after 7 pm. How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
 
 The way we normally would handle this query is to query for all sessions before 19:00 and are not workshops.  
-The problem with app-engine though is that we can not have in the same query inequality filters for more than one different properties.  
-The solution in this problem would be to first query datastore for all sessions that are not workshops and after we get the results use python and filter out the sessions after 19:00.
+The problem with app-engine though is that we can not have in the same query inequality filters for more than one properties.  
+One solution in this problem would be to first query datastore for all sessions that are not workshops and after we get the results use python and filter out the sessions after 19:00.
 
 
 [1]: https://developers.google.com/appengine
