@@ -91,6 +91,11 @@ WISHLIST_POST = endpoints.ResourceContainer(
     sessionKey=messages.StringField(1),
 )
 
+USER_SESSIONS_POST = endpoints.ResourceContainer(
+    date=messages.StringField(1, required=True),
+    dateTo=messages.StringField(2),
+)
+
 SESS_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
@@ -380,7 +385,7 @@ class ConferenceApi(remote.Service):
                       path='conference/follow/{websafeConferenceKey}',
                       http_method='GET', name='followConference')
     def followConference(self, request):
-        """If this conference is full, follow to get notified when it becomes avilable again"""
+        """If this conference is full, follow to get notified when it becomes available again"""
         retVal = True
         user = endpoints.get_current_user()
         if not user:
@@ -595,6 +600,42 @@ class ConferenceApi(remote.Service):
                            if sess.startTime < time_up]  # filter out sessions by time limits
         )
 
+    @endpoints.method(USER_SESSIONS_POST, SessionForms,
+                      path='sessions/schedule',
+                      http_method='POST', name='getUserSessionsSchedule')
+    def getUserSessionsSchedule(self, request):
+        """query sessions given a date for conferences the user has registered"""
+        user = endpoints.get_current_user()
+
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+
+        user_id = getUserId(user)
+        p_key = ndb.Key(Profile, user_id)
+        profile = p_key.get()
+
+        c_keys = [ndb.Key(urlsafe=wsck) for wsck in profile.conferenceKeysToAttend]
+        confs = ndb.get_multi(c_keys)
+        if not confs:
+            raise endpoints.NotFoundException('You haven\'t registered in any conference')
+
+        q = Session.query()
+        date = datetime.strptime(request.date[:10], "%Y-%m-%d").date()
+        # if given 2 dates search in date range, else only for that specific day
+        if request.dateTo:
+            dateTo = datetime.strptime(request.dateTo[:10], "%Y-%m-%d").date()
+            q = q.filter(Session.date >= date)
+            q = q.filter(Session.date <= dateTo)
+        else:
+            q = q.filter(Session.date == date)
+
+        q = q.order(Session.date, Session.startTime, Session.name)
+        return SessionForms(
+                    items=[self._copySessionToForm(sess)
+                           for sess in q if sess.key.parent() in c_keys]
+        )
+
+        # confs = [conf for conf in confs if conf.startDate <= date and conf.endDate >= date]
 
 # - - - Speaker  - - - - - - - - - - - - - - - - - - -
 

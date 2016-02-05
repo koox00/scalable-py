@@ -42,9 +42,9 @@ In the speaker entity there is a list of the sessions the speaker is featured (a
 ### Additional queries
 
 - Users can follow conferences that they are interested in and are full.
-When a spot empties the get notified by an email.
+When a spot empties the get notified by an email (cron job, task queue).
 
-- Users can query for sessions in conferences they are registered and are overlapping with others so they can make their schedule accordingly.
+- Users can query for sessions in conferences they are registered for a given date or date range.
 
 
 ## Problematic Query

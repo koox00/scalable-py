@@ -114,6 +114,12 @@ indexes:
 
 - kind: Session
   properties:
+  - name: date
+  - name: startTime
+  - name: name
+
+- kind: Session
+  properties:
   - name: typeOfSession
   - name: date
   - name: startTime

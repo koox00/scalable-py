@@ -62,12 +62,13 @@ class Conference(ndb.Model):
     topics = ndb.StringProperty(repeated=True)
     city = ndb.StringProperty()
     startDate = ndb.DateProperty()
-    month = ndb.IntegerProperty()  # TODO: do we need for indexing like Java?
+    month = ndb.IntegerProperty()
     endDate = ndb.DateProperty()
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
     followedBy = ndb.StringProperty(repeated=True)
-    hasFollowers = ndb.ComputedProperty(lambda self: len(self.followedBy) != 0)  # solves an inequlity problem in notifyFolllowers
+    # solves an inequlity problem in notifyFolllowers
+    hasFollowers = ndb.ComputedProperty(lambda self: len(self.followedBy) != 0)
 
     @property
     def sessions(self):
