@@ -13,9 +13,11 @@ created by wesc on 2014 apr 21
 __author__ = 'wesc+api@google.com (Wesley Chun)'
 
 
+import json
 from datetime import datetime
 
 import endpoints
+
 from protorpc import messages
 from protorpc import message_types
 from protorpc import remote
@@ -32,6 +34,7 @@ from models import (Profile, ProfileMiniForm, ProfileForm)
 from models import (Conference, ConferenceForm, ConferenceForms,
                     ConferenceQueryForm, ConferenceQueryForms)
 from models import (Session, SessionForm, SessionForms)
+from models import (Speaker, SpeakerForm)
 
 from settings import WEB_CLIENT_ID
 from settings import ANDROID_CLIENT_ID
@@ -42,9 +45,13 @@ from utils import getUserId
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
+
 MEMCACHE_ANNOUNCEMENTS_KEY = "RECENT_ANNOUNCEMENTS"
 ANNOUNCEMENT_TPL = ('Last chance to attend! The following conferences '
                     'are nearly sold out: %s')
+
+MEMCACHE_FSPEAKER_KEY = "RECENT_FEATURED_SPEAKER"
+FSPEAKER_TPL = ('{0} featured in the following sessions: {1}')
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 DEFAULTS = {
@@ -190,6 +197,7 @@ class ConferenceApi(remote.Service):
         # create Conference, send email to organizer confirming
         # creation of Conference & return (modified) ConferenceForm
         Conference(**data).put()
+
         taskqueue.add(params={'email': user.email(),
                       'conferenceInfo': repr(request)},
                       url='/tasks/send_confirmation_email')
@@ -356,6 +364,16 @@ class ConferenceApi(remote.Service):
 
 # - - - Conference Sessions - - - - - - - - - - - - - - - - - - -
 
+    @ndb.transactional(xg=True)
+    def _makeTransaction(self, session, speaker):
+        """Save the session and featured speaker in a transaction"""
+
+        Session(**session).put()
+        speaker.featuredSessions.append(session['key'].urlsafe())
+        speaker.put()
+
+        return (session, speaker)
+
     def _createSessionObject(self, request):
         user = endpoints.get_current_user()
         if not user:
@@ -368,7 +386,6 @@ class ConferenceApi(remote.Service):
 
         del data['websafeKey']
 
-        # update existing conference
         conf = ndb.Key(urlsafe=wsck).get()
         # check that conference exists
         if not conf:
@@ -379,7 +396,7 @@ class ConferenceApi(remote.Service):
         if user_id != conf.organizerUserId:
             raise endpoints.ForbiddenException(
                 'Only the owner can update the conference.')
-        # TODO: Create the Session Object from Input
+        # Create the Session Object from Input
         # add default values for those missing (both data model & outbound Message)
         for df in SESS_DEFAULTS:
             if data[df] in (None, []):
@@ -392,16 +409,18 @@ class ConferenceApi(remote.Service):
         if data['startTime']:
             data['startTime'] = datetime.strptime(data['startTime'][:5], "%H:%M").time()
 
-        c_key = ndb.Key(urlsafe=wsck)
+        c_key = conf.key
         s_id = Session.allocate_ids(size=1, parent=c_key)[0]
         s_key = ndb.Key(Session, s_id, parent=c_key)
         data['key'] = s_key
 
+        # get the speaker Object
+
         del data['websafeConferenceKey']
 
         # creation of Session & return (modified) SessionForm
-        Session(**data).put()
-        return self._copySessionToForm(request)
+
+        return data
 
     # Helper to Copy relevant fields from Session to SessionForm."""
     def _copySessionToForm(self, sess):
@@ -470,9 +489,20 @@ class ConferenceApi(remote.Service):
                       http_method='POST', name='createSession')
     def createSession(self, request):
         """Create new session in conference (by websafeConferenceKey)."""
-        return self._createSessionObject(request)
 
-    # Given a conference, return all sessions filtered by POST data.
+        # to make transaction work I had to allocate ids outside of the transction
+        session = self._createSessionObject(request)
+        speaker = self._getOrCreateSpeaker(request.speaker)
+        # and update datastore inside the transaction
+        session, speaker = self._makeTransaction(session, speaker)
+
+        if len(speaker.featuredSessions) > 1:
+            taskqueue.add(params={'speaker': speaker.fullName},
+                          url='/tasks/featured_speaker')
+
+        return self._copySessionToForm(request)
+
+    # Return all sessions which are not workshop and are before 7 AM.
     @endpoints.method(message_types.VoidMessage, SessionForms,
                       path='sessions/query',
                       http_method='GET', name='getSessionsProblematicQuery')
@@ -481,16 +511,88 @@ class ConferenceApi(remote.Service):
 
         q = Session.query()
 
-        d = datetime.strptime('19:00', '%H:%M').time()
+        # get time limits
+        time_up = datetime.strptime('19:00', '%H:%M').time()
+        time_down = datetime.strptime('00:00', '%H:%M').time()
+
+        # ndb filter one inequality ( typeOfSession)
         q = q.filter(Session.typeOfSession != "workshop")
+        # This has to be first
         q = q.order(Session.typeOfSession)
         q = q.order(Session.date, Session.startTime, Session.name)
 
         retSess = SessionForms(
                     items=[self._copySessionToForm(sess)
-                           for sess in q if sess.startTime < d])
+                           for sess in q
+                           if sess.startTime < time_up]  # filter out sessions by time limits
+        )
 
         return retSess
+
+
+# - - - Speaker  - - - - - - - - - - - - - - - - - - -
+
+    def _getOrCreateSpeaker(self, speakers_name):
+        """Get Speaker from datastore
+
+        If the speaker doesn't exist create an entry
+        return:
+            Speaker
+        """
+        q = Speaker.query(Speaker.fullName == speakers_name)
+
+        sp = q.get()
+        # create new Profile if not there
+        if not sp:
+            sp = Speaker(
+                fullName=speakers_name,
+            )
+            sp.put()
+
+        return sp  # return Speaker
+
+    def _copySpeakerToForm(speaker):
+        """Copy relevant fields from Session to SessionForm."""
+        sf = SpeakerForm()
+        for field in sf.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(sf, field.name, getattr(speaker, field.name))
+        sf.check_initialized()
+        return sf
+
+    @staticmethod
+    def _cacheFeaturedSpeaker(speakers_name):
+        """Create Featured Speaker & assign to memcache; used by
+        getFeaturedSpeakers().
+        """
+        speaker = Speaker.query(Speaker.fullName == speakers_name).get(use_cache=False, use_memcache=False)
+
+        if speaker:
+            s_keys = [ndb.Key(urlsafe=wssk) for wssk in speaker.featuredSessions]
+            sessions = ndb.get_multi(s_keys)
+            print len(s_keys)
+            print len(sessions)
+
+            sessions_names = ', '.join([sess.name for sess in sessions])
+            # create a message for display
+            fspeaker = FSPEAKER_TPL.format(speaker.fullName, sessions_names)
+            memcache.set(MEMCACHE_FSPEAKER_KEY, fspeaker)
+
+        else:
+            # If it gets called with no args,
+            # delete the memcache featured speaker entry
+            fspeaker = ""
+            memcache.delete(MEMCACHE_FSPEAKER_KEY)
+
+        return fspeaker
+
+    # get featured speaker from memcache.
+    @endpoints.method(message_types.VoidMessage, StringMessage,
+                      path='featured-speaker',
+                      http_method='GET', name='getFeaturedSpeaker')
+    def getFeaturedSpeaker(self, request):
+        """Get most recent speaker featured in more than one sessions"""
+        return StringMessage(data=memcache.get(MEMCACHE_FSPEAKER_KEY) or "")
 
 # - - - Profile objects - - - - - - - - - - - - - - - - - - -
 

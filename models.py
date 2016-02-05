@@ -59,7 +59,7 @@ class BooleanMessage(messages.Message):
 class Conference(ndb.Model):
     """Conference -- Conference object"""
     name = ndb.StringProperty(required=True)
-    description = ndb.StringProperty()  # indexed=False
+    description = ndb.StringProperty(indexed=False)
     organizerUserId = ndb.StringProperty()
     topics = ndb.StringProperty(repeated=True)
     city = ndb.StringProperty()
@@ -81,7 +81,7 @@ class Conference(ndb.Model):
 
     @property
     def profile(self):
-        """Returns a query object with current conf as an ancestor."""
+        """Returns a Profile query object with current conf as child."""
         return Profile.query(ancestor=self.key.parent())
 
 
@@ -156,7 +156,7 @@ class SessionForm(messages.Message):
     """
     name = messages.StringField(1)
     highlights = messages.StringField(2, repeated=True)
-    speaker = messages.StringField(3)
+    speaker = messages.StringField(3, required=True)
     duration = messages.StringField(4)
     typeOfSession = messages.StringField(5)
     date = messages.StringField(6)  # DateTimeField()
@@ -174,7 +174,7 @@ class SessionForms(messages.Message):
 
 class Speaker(ndb.Model):
     """Speaker -- Speaker entity object"""
-    fullName = ndb.StringProperty()
+    fullName = ndb.StringProperty(required=True)
     email = ndb.StringProperty()
     featuredSessions = ndb.StringProperty(repeated=True)
 
