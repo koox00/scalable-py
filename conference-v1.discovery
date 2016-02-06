@@ -1,0 +1,773 @@
+{
+ "kind": "discovery#restDescription",
+ "etag": "\"u_zXkMELIlX4ktyNbM2XKD4vK8E/TeYdCOodtaRzwgZcNyhL7LKIyxU\"",
+ "discoveryVersion": "v1",
+ "id": "conference:v1",
+ "name": "conference",
+ "version": "v1",
+ "description": "Conference API v0.1",
+ "icons": {
+  "x16": "http://www.google.com/images/icons/product/search-16.gif",
+  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+ },
+ "protocol": "rest",
+ "baseUrl": "https://avro-1184.appspot.com/_ah/api/conference/v1/",
+ "basePath": "/_ah/api/conference/v1/",
+ "rootUrl": "https://avro-1184.appspot.com/_ah/api/",
+ "servicePath": "conference/v1/",
+ "batchPath": "batch",
+ "parameters": {
+  "alt": {
+   "type": "string",
+   "description": "Data format for the response.",
+   "default": "json",
+   "enum": [
+    "json"
+   ],
+   "enumDescriptions": [
+    "Responses with Content-Type of application/json"
+   ],
+   "location": "query"
+  },
+  "fields": {
+   "type": "string",
+   "description": "Selector specifying which fields to include in a partial response.",
+   "location": "query"
+  },
+  "key": {
+   "type": "string",
+   "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+   "location": "query"
+  },
+  "oauth_token": {
+   "type": "string",
+   "description": "OAuth 2.0 token for the current user.",
+   "location": "query"
+  },
+  "prettyPrint": {
+   "type": "boolean",
+   "description": "Returns response with indentations and line breaks.",
+   "default": "true",
+   "location": "query"
+  },
+  "quotaUser": {
+   "type": "string",
+   "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+   "location": "query"
+  },
+  "userIp": {
+   "type": "string",
+   "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+   "location": "query"
+  }
+ },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/userinfo.email": {
+     "description": "View your email address"
+    }
+   }
+  }
+ },
+ "schemas": {
+  "ModelsBooleanMessage": {
+   "id": "ModelsBooleanMessage",
+   "type": "object",
+   "description": "BooleanMessage-- outbound Boolean value message",
+   "properties": {
+    "data": {
+     "type": "boolean"
+    }
+   }
+  },
+  "ModelsConferenceForm": {
+   "id": "ModelsConferenceForm",
+   "type": "object",
+   "description": "ConferenceForm -- Conference outbound form message",
+   "properties": {
+    "city": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "endDate": {
+     "type": "string"
+    },
+    "maxAttendees": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "month": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "name": {
+     "type": "string"
+    },
+    "organizerDisplayName": {
+     "type": "string"
+    },
+    "organizerUserId": {
+     "type": "string"
+    },
+    "seatsAvailable": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "startDate": {
+     "type": "string"
+    },
+    "topics": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "websafeKey": {
+     "type": "string"
+    }
+   }
+  },
+  "ModelsConferenceForms": {
+   "id": "ModelsConferenceForms",
+   "type": "object",
+   "description": "ConferenceForms -- multiple Conference outbound form message",
+   "properties": {
+    "items": {
+     "type": "array",
+     "description": "ConferenceForm -- Conference outbound form message",
+     "items": {
+      "$ref": "ModelsConferenceForm"
+     }
+    }
+   }
+  },
+  "ModelsConferenceQueryForm": {
+   "id": "ModelsConferenceQueryForm",
+   "type": "object",
+   "description": "ConferenceQueryForm -- Conference query inbound form message",
+   "properties": {
+    "field": {
+     "type": "string"
+    },
+    "operator": {
+     "type": "string"
+    },
+    "value": {
+     "type": "string"
+    }
+   }
+  },
+  "ModelsConferenceQueryForms": {
+   "id": "ModelsConferenceQueryForms",
+   "type": "object",
+   "description": "ConferenceQueryForms -- multiple ConferenceQueryForm inbound form message",
+   "properties": {
+    "filters": {
+     "type": "array",
+     "description": "ConferenceQueryForm -- Conference query inbound form message",
+     "items": {
+      "$ref": "ModelsConferenceQueryForm"
+     }
+    }
+   }
+  },
+  "ModelsProfileForm": {
+   "id": "ModelsProfileForm",
+   "type": "object",
+   "description": "ProfileForm -- Profile outbound form message",
+   "properties": {
+    "conferenceKeysToAttend": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "displayName": {
+     "type": "string"
+    },
+    "mainEmail": {
+     "type": "string"
+    },
+    "sessionWishlist": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "teeShirtSize": {
+     "type": "string",
+     "enum": [
+      "L_M",
+      "L_W",
+      "M_M",
+      "M_W",
+      "NOT_SPECIFIED",
+      "S_M",
+      "S_W",
+      "XL_M",
+      "XL_W",
+      "XS_M",
+      "XS_W",
+      "XXL_M",
+      "XXL_W",
+      "XXXL_M",
+      "XXXL_W"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    }
+   }
+  },
+  "ModelsProfileMiniForm": {
+   "id": "ModelsProfileMiniForm",
+   "type": "object",
+   "description": "ProfileMiniForm -- update Profile form message",
+   "properties": {
+    "displayName": {
+     "type": "string"
+    },
+    "teeShirtSize": {
+     "type": "string",
+     "enum": [
+      "L_M",
+      "L_W",
+      "M_M",
+      "M_W",
+      "NOT_SPECIFIED",
+      "S_M",
+      "S_W",
+      "XL_M",
+      "XL_W",
+      "XS_M",
+      "XS_W",
+      "XXL_M",
+      "XXL_W",
+      "XXXL_M",
+      "XXXL_W"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    }
+   }
+  },
+  "ModelsSessionForm": {
+   "id": "ModelsSessionForm",
+   "type": "object",
+   "description": "SessionForm Session outbound form message Expects to have Conference's key as the parent key.",
+   "properties": {
+    "date": {
+     "type": "string"
+    },
+    "duration": {
+     "type": "string"
+    },
+    "highlights": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "name": {
+     "type": "string"
+    },
+    "speaker": {
+     "type": "string"
+    },
+    "startTime": {
+     "type": "string"
+    },
+    "typeOfSession": {
+     "type": "string"
+    },
+    "websafeKey": {
+     "type": "string"
+    }
+   }
+  },
+  "ModelsSessionForms": {
+   "id": "ModelsSessionForms",
+   "type": "object",
+   "description": "SessionForms Multiple Conference Sessions outbound form message",
+   "properties": {
+    "items": {
+     "type": "array",
+     "description": "SessionForm Session outbound form message Expects to have Conference's key as the parent key.",
+     "items": {
+      "$ref": "ModelsSessionForm"
+     }
+    }
+   }
+  },
+  "ModelsStringMessage": {
+   "id": "ModelsStringMessage",
+   "type": "object",
+   "description": "StringMessage-- outbound (single) string message",
+   "properties": {
+    "data": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ "methods": {
+  "addSessionToWishlist": {
+   "id": "conference.addSessionToWishlist",
+   "path": "wishlist/{sessionKey}",
+   "httpMethod": "POST",
+   "description": "Add session to user's widhlist.",
+   "parameters": {
+    "sessionKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "sessionKey"
+   ],
+   "response": {
+    "$ref": "ModelsBooleanMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "createConference": {
+   "id": "conference.createConference",
+   "path": "conference",
+   "httpMethod": "POST",
+   "description": "Create new conference.",
+   "request": {
+    "$ref": "ModelsConferenceForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsConferenceForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "createSession": {
+   "id": "conference.createSession",
+   "path": "conference/sessions/{websafeConferenceKey}",
+   "httpMethod": "POST",
+   "description": "Create new session in conference (by websafeConferenceKey).",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "request": {
+    "$ref": "ModelsSessionForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsSessionForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "deleteSessionInWishlist": {
+   "id": "conference.deleteSessionInWishlist",
+   "path": "wishlist/{sessionKey}",
+   "httpMethod": "DELETE",
+   "description": "Add session to user's widhlist.",
+   "parameters": {
+    "sessionKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "sessionKey"
+   ],
+   "response": {
+    "$ref": "ModelsBooleanMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "filterPlayground": {
+   "id": "conference.filterPlayground",
+   "path": "filterPlayground",
+   "httpMethod": "GET",
+   "description": "Filter Playground",
+   "response": {
+    "$ref": "ModelsConferenceForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "followConference": {
+   "id": "conference.followConference",
+   "path": "conference/follow/{websafeConferenceKey}",
+   "httpMethod": "GET",
+   "description": "If this conference is full, follow to get notified when it becomes available again",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "response": {
+    "$ref": "ModelsBooleanMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getAnnouncement": {
+   "id": "conference.getAnnouncement",
+   "path": "conference/announcement/get",
+   "httpMethod": "GET",
+   "description": "Return Announcement from memcache.",
+   "response": {
+    "$ref": "ModelsStringMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getConference": {
+   "id": "conference.getConference",
+   "path": "conference/{websafeConferenceKey}",
+   "httpMethod": "GET",
+   "description": "Return requested conference (by websafeConferenceKey).",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "response": {
+    "$ref": "ModelsConferenceForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getConferenceSessions": {
+   "id": "conference.getConferenceSessions",
+   "path": "conference/sessions/{websafeConferenceKey}",
+   "httpMethod": "GET",
+   "description": "Return all sessions by conference (by websafeConferenceKey).",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getConferenceSessionsByType": {
+   "id": "conference.getConferenceSessionsByType",
+   "path": "conference/sessions/{websafeConferenceKey}/{typeOfSession}",
+   "httpMethod": "GET",
+   "description": "Query sessions for a specified type (by websafeConferenceKey).",
+   "parameters": {
+    "typeOfSession": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    },
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey",
+    "typeOfSession"
+   ],
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getConferencesCreated": {
+   "id": "conference.getConferencesCreated",
+   "path": "getConferencesCreated",
+   "httpMethod": "POST",
+   "description": "Return conferences created by user.",
+   "response": {
+    "$ref": "ModelsConferenceForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getConferencesToAttend": {
+   "id": "conference.getConferencesToAttend",
+   "path": "conferences/attending",
+   "httpMethod": "GET",
+   "description": "Get list of conferences that user has registered for.",
+   "response": {
+    "$ref": "ModelsConferenceForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getFeaturedSpeaker": {
+   "id": "conference.getFeaturedSpeaker",
+   "path": "featured-speaker",
+   "httpMethod": "GET",
+   "description": "Get most recent speaker featured in more than one sessions",
+   "response": {
+    "$ref": "ModelsStringMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getProfile": {
+   "id": "conference.getProfile",
+   "path": "profile",
+   "httpMethod": "GET",
+   "description": "Return user profile.",
+   "response": {
+    "$ref": "ModelsProfileForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getSessionsBySpeaker": {
+   "id": "conference.getSessionsBySpeaker",
+   "path": "speaker/{speaker}/sessions",
+   "httpMethod": "GET",
+   "description": "Given a speaker, return all sessions given by this particular speaker, across all conferences (by speaker's fullname).",
+   "parameters": {
+    "speaker": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "speaker"
+   ],
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getSessionsInWishlist": {
+   "id": "conference.getSessionsInWishlist",
+   "path": "wishlist",
+   "httpMethod": "GET",
+   "description": "Get list of conferences that user has registered for.",
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getSessionsProblematicQuery": {
+   "id": "conference.getSessionsProblematicQuery",
+   "path": "sessions/query",
+   "httpMethod": "GET",
+   "description": "Query sessions with two inequallite filters",
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getUserSessionsSchedule": {
+   "id": "conference.getUserSessionsSchedule",
+   "path": "sessions/schedule",
+   "httpMethod": "POST",
+   "description": "query sessions given a date for conferences the user has registered",
+   "parameters": {
+    "date": {
+     "type": "string",
+     "required": true,
+     "location": "query"
+    },
+    "dateTo": {
+     "type": "string",
+     "location": "query"
+    }
+   },
+   "parameterOrder": [
+    "date"
+   ],
+   "response": {
+    "$ref": "ModelsSessionForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "queryConferences": {
+   "id": "conference.queryConferences",
+   "path": "queryConferences",
+   "httpMethod": "POST",
+   "description": "Query for conferences.",
+   "request": {
+    "$ref": "ModelsConferenceQueryForms",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsConferenceForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "registerForConference": {
+   "id": "conference.registerForConference",
+   "path": "conference/{websafeConferenceKey}",
+   "httpMethod": "POST",
+   "description": "Register user for selected conference.",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "response": {
+    "$ref": "ModelsBooleanMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "saveProfile": {
+   "id": "conference.saveProfile",
+   "path": "profile",
+   "httpMethod": "POST",
+   "description": "Update & return user profile.",
+   "request": {
+    "$ref": "ModelsProfileMiniForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsProfileForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "unregisterFromConference": {
+   "id": "conference.unregisterFromConference",
+   "path": "conference/{websafeConferenceKey}",
+   "httpMethod": "DELETE",
+   "description": "Unregister user for selected conference.",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "response": {
+    "$ref": "ModelsBooleanMessage"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "updateConference": {
+   "id": "conference.updateConference",
+   "path": "conference/{websafeConferenceKey}",
+   "httpMethod": "PUT",
+   "description": "Update conference w/provided fields & return w/updated info.",
+   "parameters": {
+    "websafeConferenceKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeConferenceKey"
+   ],
+   "request": {
+    "$ref": "ModelsConferenceForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsConferenceForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  }
+ }
+}
