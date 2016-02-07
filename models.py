@@ -145,6 +145,7 @@ class Speaker(ndb.Model):
     featuredSessions = ndb.StringProperty(repeated=True)
 
     @property
+    """Returns a Session query object for sessions this Speaker is featured"""
     def featuredSessions(self):
         return Session.query(Session.speaker == self.key)
 
