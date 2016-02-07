@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"u_zXkMELIlX4ktyNbM2XKD4vK8E/TeYdCOodtaRzwgZcNyhL7LKIyxU\"",
+ "etag": "\"u_zXkMELIlX4ktyNbM2XKD4vK8E/yOh5w07YNKCcLq8j3F0IQqslj9A\"",
  "discoveryVersion": "v1",
  "id": "conference:v1",
  "name": "conference",
@@ -292,7 +292,8 @@
      "type": "string"
     },
     "duration": {
-     "type": "string"
+     "type": "integer",
+     "format": "int32"
     },
     "highlights": {
      "type": "array",
@@ -327,6 +328,36 @@
      "description": "SessionForm Session outbound form message Expects to have Conference's key as the parent key.",
      "items": {
       "$ref": "ModelsSessionForm"
+     }
+    }
+   }
+  },
+  "ModelsSpeakerForm": {
+   "id": "ModelsSpeakerForm",
+   "type": "object",
+   "description": "SpeakerForm - Speaker outbound form message",
+   "properties": {
+    "email": {
+     "type": "string"
+    },
+    "fullName": {
+     "type": "string"
+    },
+    "websafeKey": {
+     "type": "string"
+    }
+   }
+  },
+  "ModelsSpeakerForms": {
+   "id": "ModelsSpeakerForms",
+   "type": "object",
+   "description": "SpeakerForms Multiple Speakers outbound form message",
+   "properties": {
+    "items": {
+     "type": "array",
+     "description": "SpeakerForm - Speaker outbound form message",
+     "items": {
+      "$ref": "ModelsSpeakerForm"
      }
     }
    }
@@ -407,6 +438,22 @@
     "https://www.googleapis.com/auth/userinfo.email"
    ]
   },
+  "createSpeaker": {
+   "id": "conference.createSpeaker",
+   "path": "speakers",
+   "httpMethod": "POST",
+   "description": "Get speaker (by websafeSpeakerKey)",
+   "request": {
+    "$ref": "ModelsSpeakerForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsSpeakerForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
   "deleteSessionInWishlist": {
    "id": "conference.deleteSessionInWishlist",
    "path": "wishlist/{sessionKey}",
@@ -445,7 +492,7 @@
    "id": "conference.followConference",
    "path": "conference/follow/{websafeConferenceKey}",
    "httpMethod": "GET",
-   "description": "If this conference is full, follow to get notified when it becomes available again",
+   "description": "Add user to the followers list of the conf, This list is used to notify users when a conf becomes available again Returns: True: when succees False: if no conf or conf is not full",
    "parameters": {
     "websafeConferenceKey": {
      "type": "string",
@@ -521,7 +568,7 @@
   },
   "getConferenceSessionsByType": {
    "id": "conference.getConferenceSessionsByType",
-   "path": "conference/sessions/{websafeConferenceKey}/{typeOfSession}",
+   "path": "conference/sessions/{websafeConferenceKey}/type/{typeOfSession}",
    "httpMethod": "GET",
    "description": "Query sessions for a specified type (by websafeConferenceKey).",
    "parameters": {
@@ -597,18 +644,18 @@
   },
   "getSessionsBySpeaker": {
    "id": "conference.getSessionsBySpeaker",
-   "path": "speaker/{speaker}/sessions",
+   "path": "speakers/{websafeSpeakerKey}/sessions",
    "httpMethod": "GET",
    "description": "Given a speaker, return all sessions given by this particular speaker, across all conferences (by speaker's fullname).",
    "parameters": {
-    "speaker": {
+    "websafeSpeakerKey": {
      "type": "string",
      "required": true,
      "location": "path"
     }
    },
    "parameterOrder": [
-    "speaker"
+    "websafeSpeakerKey"
    ],
    "response": {
     "$ref": "ModelsSessionForms"
@@ -641,10 +688,44 @@
     "https://www.googleapis.com/auth/userinfo.email"
    ]
   },
+  "getSpeaker": {
+   "id": "conference.getSpeaker",
+   "path": "speakers/{websafeSpeakerKey}",
+   "httpMethod": "GET",
+   "description": "Get speaker (by websafeSpeakerKey)",
+   "parameters": {
+    "websafeSpeakerKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeSpeakerKey"
+   ],
+   "response": {
+    "$ref": "ModelsSpeakerForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "getSpeakers": {
+   "id": "conference.getSpeakers",
+   "path": "speakers",
+   "httpMethod": "GET",
+   "description": "Get all speakers",
+   "response": {
+    "$ref": "ModelsSpeakerForms"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
   "getUserSessionsSchedule": {
    "id": "conference.getUserSessionsSchedule",
    "path": "sessions/schedule",
-   "httpMethod": "POST",
+   "httpMethod": "GET",
    "description": "query sessions given a date for conferences the user has registered",
    "parameters": {
     "date": {
@@ -764,6 +845,58 @@
    },
    "response": {
     "$ref": "ModelsConferenceForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "updateSession": {
+   "id": "conference.updateSession",
+   "path": "conference/sessions/update/{websafeSessionKey}",
+   "httpMethod": "PUT",
+   "description": "Update a session in conference (by websafeConferenceKey, websafeSessionKey).",
+   "parameters": {
+    "websafeSessionKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeSessionKey"
+   ],
+   "request": {
+    "$ref": "ModelsSessionForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsSessionForm"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
+  "updateSpeaker": {
+   "id": "conference.updateSpeaker",
+   "path": "speakers/{websafeSpeakerKey}",
+   "httpMethod": "PUT",
+   "description": "Get speaker (by websafeSpeakerKey)",
+   "parameters": {
+    "websafeSpeakerKey": {
+     "type": "string",
+     "required": true,
+     "location": "path"
+    }
+   },
+   "parameterOrder": [
+    "websafeSpeakerKey"
+   ],
+   "request": {
+    "$ref": "ModelsSpeakerForm",
+    "parameterName": "resource"
+   },
+   "response": {
+    "$ref": "ModelsSpeakerForm"
    },
    "scopes": [
     "https://www.googleapis.com/auth/userinfo.email"

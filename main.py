@@ -60,8 +60,8 @@ class SendFollowerEmail(webapp2.RequestHandler):
 
 class SetFeaturedSpeakerHandler(webapp2.RequestHandler):
     def post(self):
-        """Set Featured Speaker in Memcache."""
-        ConferenceApi._cacheFeaturedSpeaker(self.request.get('speaker'))
+        """Set Featured Speaker in Memcache by websafeConfKey and SpeakersName"""
+        ConferenceApi._cacheFeaturedSpeaker(self.request.get('wsck'), self.request.get('speaker'))
         self.response.set_status(204)
 
 

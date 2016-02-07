@@ -67,7 +67,7 @@ class Conference(ndb.Model):
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
     followedBy = ndb.StringProperty(repeated=True)
-    # solves an inequlity problem in notifyFolllowers
+    # quick check for followers, typical usage in queries
     hasFollowers = ndb.ComputedProperty(lambda self: len(self.followedBy) != 0)
 
     @property
@@ -138,15 +138,46 @@ class ConferenceQueryForms(messages.Message):
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 
+class Speaker(ndb.Model):
+    """Speaker -- Speaker entity object"""
+    fullName = ndb.StringProperty(required=True)
+    email = ndb.StringProperty()
+    featuredSessions = ndb.StringProperty(repeated=True)
+
+    @property
+    def featuredSessions(self):
+        return Session.query(Session.speaker == self.key)
+
+
+class SpeakerForm(messages.Message):
+    """SpeakerForm - Speaker outbound form message"""
+    fullName = messages.StringField(1)
+    email = messages.StringField(2)
+    websafeKey = messages.StringField(4)
+
+
+class SpeakerForms(messages.Message):
+    """SpeakerForms
+
+    Multiple Speakers  outbound form message
+    """
+    items = messages.MessageField(SpeakerForm, 1, repeated=True)
+
+
 class Session(ndb.Model):
     """Session -- Session object"""
     name = ndb.StringProperty(required=True)
     highlights = ndb.StringProperty(repeated=True)
-    speaker = ndb.StringProperty()
-    duration = ndb.StringProperty()  # indexed=False
+    speaker = ndb.KeyProperty(Speaker)
+    duration = ndb.IntegerProperty()
     typeOfSession = ndb.StringProperty()
     date = ndb.DateProperty()
     startTime = ndb.TimeProperty()
+
+    @property
+    def conference(self):
+        """Returns parent ConferenceObject."""
+        return Conference.query(ancestor=self.key.parent()).get()
 
 
 class SessionForm(messages.Message):
@@ -157,8 +188,8 @@ class SessionForm(messages.Message):
     """
     name = messages.StringField(1)
     highlights = messages.StringField(2, repeated=True)
-    speaker = messages.StringField(3, required=True)
-    duration = messages.StringField(4)
+    speaker = messages.StringField(3)
+    duration = messages.IntegerField(4, variant=messages.Variant.INT32)
     typeOfSession = messages.StringField(5)
     date = messages.StringField(6)  # DateTimeField()
     startTime = messages.StringField(7)  # DateTimeField()
@@ -171,20 +202,6 @@ class SessionForms(messages.Message):
     Multiple Conference Sessions  outbound form message
     """
     items = messages.MessageField(SessionForm, 1, repeated=True)
-
-
-class Speaker(ndb.Model):
-    """Speaker -- Speaker entity object"""
-    fullName = ndb.StringProperty(required=True)
-    email = ndb.StringProperty()
-    featuredSessions = ndb.StringProperty(repeated=True)
-
-
-class SpeakerForm(messages.Message):
-    """SpeakerForm - Speaker outbound form message"""
-    fullName = messages.StringField(1)
-    email = messages.StringField(2)
-    featuredSessions = messages.StringField(3, repeated=True)
 
 
 __authors__ = 'wesc+api@google.com (Wesley Chun), cooxlee@gmail.com (Koox00)'
