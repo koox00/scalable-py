@@ -460,9 +460,10 @@ class ConferenceApi(remote.Service):
 
         del data['websafeKey']
 
-        conf = ndb.Key(urlsafe=wsck).get()
+        conf_key = ndb.Key(urlsafe=wsck)
+        conf = conf_key.get()
         # check that conference exists
-        if not conf:
+        if not conf or conf_key.kind() != 'Conference':
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' % wsck)
 
@@ -575,7 +576,9 @@ class ConferenceApi(remote.Service):
                 if field.name == 'date':
                     setattr(sf, field.name, str(getattr(sess, field.name)))
                 elif field.name == 'speaker':
-                    setattr(sf, field.name, str(getattr(sess, field.name).urlsafe()))
+                    sp_key = getattr(sess, field.name)
+                    if sp_key:
+                        setattr(sf, field.name, str(sp_key))
                 elif field.name == 'startTime':
                     setattr(sf, field.name, str(getattr(sess, field.name)))
                 else:
