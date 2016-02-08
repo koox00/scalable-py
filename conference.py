@@ -445,9 +445,8 @@ class ConferenceApi(remote.Service):
 
     def _createSessionObject(self, request):
         """ Create Session Object
-
-        If a speaker is specified append the session key (urlsafe)
-        to speaker's featured sessions
+        
+        If a speaker is specified, check validity and add his key to the session
         """
         user = endpoints.get_current_user()
         if not user:
