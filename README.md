@@ -58,6 +58,7 @@ This way is easier to update the session entity with a different speaker.
 The backend API also provides endpoints for Speaker fetching/creation and Session update. To assign a Speaker to a Session
  you have to provide a urlsafe string of the Speakers key as the `speaker` field for the `Session` entity.
 
+See the GoogleCloudPlatform/python-docs-samples repo for great [modeling][7]  examples.
 
 ### Additional queries
 
@@ -87,3 +88,4 @@ One solution in this problem would be to first query datastore for all sessions 
 [4]: https://console.developers.google.com/
 [5]: https://localhost:8080/
 [6]: https://developers.google.com/appengine/docs/python/endpoints/endpoints_tool
+[7]: https://github.com/GoogleCloudPlatform/python-docs-samples/tree/master/appengine/ndb/modeling
